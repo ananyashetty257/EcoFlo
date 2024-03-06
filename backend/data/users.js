@@ -27,7 +27,14 @@ const users=[
         points:40,
         co2saved:743,
         isAdmin:false,
+    },
+    {
+        name:'Ananya',
+        email:'ananyashetty257@gmail.com',
+        password:bcrypt.hashSync('2241114',10),
+        isAdmin:true,
     }
+
 ];
 
 export default users;

@@ -1,0 +1,51 @@
+.container {
+    max-width: 100%;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.user-container {
+    background-color: #f0f0f0;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h1 {
+    font-size: clamp(24px, 5vw, 36px);
+    margin-bottom: 20px;
+}
+
+.user-details {
+    margin-bottom: 10px;
+}
+
+.user-details label {
+    font-size: clamp(16px, 3vw, 20px); 
+    font-weight: bold;
+}
+
+.user-details p {
+    font-size: clamp(14px, 3vw, 18px);
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 10px;
+    }
+
+    .user-container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: clamp(20px, 4vw, 28px); 
+    }
+
+    .user-details label {
+        font-size: clamp(14px, 3vw, 18px);
+    }
+
+    .user-details p {
+        font-size: clamp(12px, 3vw, 16px); 
+    }
+}

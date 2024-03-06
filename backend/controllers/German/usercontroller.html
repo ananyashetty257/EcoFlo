@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Log</title>
+    <link rel="stylesheet" href="uc.css">
+</head>
+<body>
+    <div class="container">
+        <h1>User Authentication</h1>
+        <form id="loginForm">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import asyncHandler from '../middleware/asyncHandler.js';
+        import User from '../models/userModel.js';
+        import generateTokens from '../utils/generateTokens.js';
+
+        const authUser = asyncHandler(async(req, res) => {
+            const { email, password } = req.body;
+
+            const user = await User.findOne({ email });
+            if (user && (await user.matchPassword(password))) {
+                generateTokens(res, user._id);
+                res.status(200).json({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    points: user.points,
+                    co2saved: user.co2saved,
+                    isAdmin: user.isAdmin,
+                });
+            } else {
+                res.status(401);
+                throw new Error('Invalid Email or Password');
+            }
+        });
+
+        const registerUser = asyncHandler(async(req, res) => {
+            const { name, email, password } = req.body;
+            const userExists = await User.findOne({ email });
+            if (userExists) {
+                res.status(400);
+                throw new Error('User already exists');
+            }
+
+            const user = await User.create({
+                name,
+                email,
+                password,
+            });
+
+            if (user) {
+                generateTokens(res, user._id);
+                res.status(201).json({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    points: user.points,
+                    co2saved: user.co2saved,
+                    isAdmin: user.isAdmin,
+                });
+            } else {
+                res.status(400);
+                throw new Error('Invalid user data');
+            }
+        });
+
+        const logoutUser = asyncHandler(async(req, res) => {
+            res.cookie('jwt', '', {
+                httpOnly: true,
+                expires: new Date(0),
+            });
+            res.status(200).json({ message: 'Logged out Successfully' });
+        });
+
+        const getUserProfile = asyncHandler(async(req, res) => {
+            const user = await User.findById(req.user._id);
+
+            if (user) {
+                res.status(200).json({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    points: user.points,
+                    co2saved: user.co2saved,
+                    isAdmin: user.isAdmin,
+                });
+            } else {
+                res.status(404);
+                throw new Error("User not found");
+            }
+        });
+
+        const updateUserProfile = asyncHandler(async(req, res) => {
+            const user = await User.findById(req.user._id);
+            if (user) {
+                user.name = req.body.name || user.name;
+                user.email = req.body.email || user.email;
+
+                if (req.body.password) {
+                    user.password = req.body.password;
+                }
+
+                const updateUser = await user.save();
+                res.status(200).json({
+                    _id: updateUser._id,
+                    name: updateUser.name,
+                    email: updateUser.email,
+                    points: updateUser.points,
+                    co2saved: updateUser.co2saved,
+                    isAdmin: updateUser.isAdmin
+                });
+            } else {
+                res.status(404);
+                throw new Error("User not found");
+            }
+        });
+
+        const getUsers = asyncHandler(async(req, res) => {
+            res.send('get users');
+        });
+
+        const deleteUsers = asyncHandler(async(req, res) => {
+            res.send('delete users');
+        });
+
+        const getUsersById = asyncHandler(async(req, res) => {
+            res.send('get users by id');
+        });
+
+        const updateUser = asyncHandler(async(req, res) => {
+            res.send('update user');
+        });
+
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', async(event) => {
+            event.preventDefault();
+            const formData = new FormData(loginForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                const responseData = await response.json();
+                console.log(responseData); // Handle response data as needed
+            } catch (error) {
+                console.error('Error:', error);
+                // Handle error
+            }
+        });
+    </script>
+</body>
+</html>

@@ -7,6 +7,7 @@ export const transportApiSlice=apiSlice.injectEndpoints({
             query:()=>({
                 url:TRANSPORT_URL,
             }),
+            providesTags:['Transports'],
             keepUnusedDataFor:5
         }),
         getTransportDetails:builder.query({
@@ -14,8 +15,37 @@ export const transportApiSlice=apiSlice.injectEndpoints({
                 url:`${TRANSPORT_URL}/${transportId}`,
             }),
             keepUnusedDataFor:5,
+        }),
+        addTransport:builder.mutation({
+            query:()=>({
+                url:TRANSPORT_URL,
+                method:'POST',
+            }),
+            invalidatesTags:[`Transport`],
+        }),
+        updateTransport:builder.mutation({
+            query:(data)=>({
+                url: `${TRANSPORT_URL}/${data._id}`,
+                method:'PUT',
+                body:data,
+            }),
+            invalidatesTags:['Transports'],
+        }),
+        deleteTransport:builder.mutation({
+            query:(transportId)=>({
+                url:`${TRANSPORT_URL}/${transportId}`,
+                method:'DELETE',
+            }),
+        }),
+        createReview:builder.mutation({
+            query:(data)=>({
+                url:`${TRANSPORT_URL}/${data.transportId}/reviews`,
+                method:"POST",
+                body:data,
+            }),
+            invalidatesTags:['Transport'],
         })
     }),
 });
 
-export const{useGetTransportsQuery , useGetTransportDetailsQuery}=transportApiSlice;
+export const{useUpdateTransportMutation,useCreateReviewMutation,useDeleteTransportMutation,useGetTransportsQuery , useGetTransportDetailsQuery,useAddTransportMutation}=transportApiSlice;
