@@ -5,8 +5,36 @@ import Transport from "../models/transportModels.js";
 //@route GET/api/transport
 //@access Public
 const getTransport=asyncHandler(async(req,res)=>{
-    const transports=await Transport.find({});
-    res.json(transports);
+    try {
+        let filters = {};
+        if (req.query.keyword) {
+            const keywordRegex = new RegExp(req.query.keyword, 'i');
+            filters = {
+            $or: [
+                { APPS: keywordRegex }, // Search by name
+                { MODE_OF_TRANSPORT: keywordRegex } // Search by mode of transport
+            ]
+            };
+        }
+        if (req.query.weatherCompatible === 'true') {
+          filters.WEATHER = true;
+        }
+        const transports = await Transport.find({...filters});
+    
+        if (req.query.sortBy === 'cost') {
+          transports.sort((a, b) => a.COST_PER_KM - b.COST_PER_KM);
+        } else if (req.query.sortBy === 'emission') {
+          transports.sort((a, b) => a.CARBON_INDEX_PER_KM - b.CARBON_INDEX_PER_KM);
+        } else if (req.query.sortBy === 'points') {
+          transports.sort((a, b) => b.POINTS_REWARDS - a.POINTS_REWARDS);
+        } else if (req.query.sortBy === 'points') {
+            transports.sort((a, b) => b.AVG_SPEED - a.AVG_SPEED);
+        }
+    
+        res.json(transports);
+      } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+      }
 });
 
 const getTransportById=asyncHandler(async(req,res)=>{
@@ -106,4 +134,34 @@ const deleteTransport=asyncHandler(async(req,res)=>{
     }
 });
 
-export {getTransport,deleteTransport,getTransportById,updateTransport,addTransport};
+//@desc create a review
+//@route POST/api/transport/:id/reviews
+//@access Private
+const createTransportReview=asyncHandler(async(req,res)=>{
+    const {rating,comment}=req.body;
+    try{
+        const transport=await Transport.findById(req.params.id);
+        const alreadyReviewed=transport.REVIEWS.find((review)=>review.user.toString===req.user._id.toString());
+        if(alreadyReviewed){
+            res.status(400);
+            throw new Error('Transport already reviewed');
+        }
+        const review={
+            APPS:req.user.name,
+            RATINGS:Number(rating),
+            COMMENTS:comment,
+            user:req.user._id
+        };
+        transport.REVIEWS.push(review);
+        transport.NUM_REVIEWS=transport.REVIEWS.length+transport.NUM_REVIEWS;
+        transport.RATINGS=transport.REVIEWS.reduce((acc,review)=>acc+review.RATINGS,0)/transport.REVIEWS.length;
+
+        await transport.save();
+        res.status(201).json({message:'Review Added'});
+    }catch(error){
+        res.status(404);
+        console.log(error.message);
+    }
+});
+
+export {getTransport,deleteTransport,getTransportById,updateTransport,addTransport,createTransportReview};

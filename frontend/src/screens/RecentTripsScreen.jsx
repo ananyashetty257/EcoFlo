@@ -85,7 +85,7 @@ const RecentTripsScreen = () => {
                       <Col className='trip-details'>
                         Trip Tariff:<br/>
                         <h4>Distance:</h4><h5>{item.tripDistance}  KMs</h5>
-                        <h4>Travel Fee:</h4><h5>Rs. {item.tripDistance*item.COST_PER_KM}</h5>
+                        <h4>Travel Fee:</h4><h5>Rs. {(item.tripDistance*item.COST_PER_KM).toFixed(0)}</h5>
                       </Col>
                       <Col className='trip-details'>
                         <h4>Sustainability:</h4>
@@ -117,7 +117,7 @@ const RecentTripsScreen = () => {
                         </h5>
                       </Col>
                       <Col className='trip-details'>
-                        <h4>Emmision:</h4><h5>You Saved<br/><h6>{(200-item.CARBON_INDEX_PER_KM)*item.tripDistance} g</h6>CO2 emmision</h5>
+                        <h4>Emmision:</h4><h5>You Saved<br/><h6>{((200-item.CARBON_INDEX_PER_KM)*item.tripDistance).toFixed(0)} g</h6>CO2 emmision</h5>
                       </Col>
                       <Col className='trip-details'>
                         <h4>Points:</h4><h5><h6>{item.REWARD_POINTS} pts</h6>after we verify your ride</h5>
